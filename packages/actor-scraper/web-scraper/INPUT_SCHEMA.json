@@ -1,7 +1,7 @@
 {
     "title": "Web Scraper Input",
     "type": "object",
-    "description": "Web Scraper loads <b>Start URLs</b> in the Chrome browser and executes <b>Page function</b> on each page to extract data from it. To follow links and scrape additional pages, set <b>Link selector</b> with <b>Pseudo-URLs</b> and/or <b>Glob patterns</b> to specify which links to follow. Alternatively, you can manually enqueue new links in <b>Page function</b>. For details, see actor's <a href='https://apify.com/apify/web-scraper' target='_blank' rel='noopener'>README</a> or <a href='https://docs.apify.com/academy/apify-scrapers/web-scraper' target='_blank' rel='noopener'>Web scraping tutorial</a> in the Apify documentation.",
+    "description": "Web Scraper loads <b>Start URLs</b> in the Chrome browser and executes <b>Page function</b> on each page to extract data from it. To follow links and scrape additional pages, set <b>Link selector</b> with <b>Pseudo-URLs</b> and/or <b>Glob patterns</b> to specify which links to follow. Alternatively, you can manually enqueue new links in <b>Page function</b>. For details, see actor's <a href='https://apify.com/apify/web-scraper' target='_blank' rel='noopener'>README</a> or <a href='https://apify.com/docs/scraping/tutorial/introduction' target='_blank' rel='noopener'>Web scraping tutorial</a> in the Apify documentation.",
     "schemaVersion": 1,
     "properties": {
         "runMode": {
@@ -10,7 +10,7 @@
             "type": "string",
             "description": "This property indicates the scraper's mode of operation. In DEVELOPMENT mode, the scraper ignores page timeouts, doesn't use sessionPool, opens pages one by one and enables debugging via Chrome DevTools.  Open the live view tab or the container URL to access the debugger. Further debugging options can be configured in the Advanced configuration section. PRODUCTION mode disables debugging and enables timeouts and concurrency. <br><br>For details, see <a href='https://apify.com/apify/web-scraper#run-mode' target='_blank' rel='noopener'>Run mode</a> in README.",
             "default": "PRODUCTION",
-            "prefill": "DEVELOPMENT",
+            "prefill": "PRODUCTION",
             "editor": "select",
             "enum": [
                 "PRODUCTION",
@@ -21,7 +21,7 @@
             "title": "Start URLs",
             "type": "array",
             "description": "A static list of URLs to scrape. <br><br>For details, see <a href='https://apify.com/apify/web-scraper#start-urls' target='_blank' rel='noopener'>Start URLs</a> in README.",
-            "prefill": [{ "url": "https://crawlee.dev" }],
+            "prefill": [{ "url": "https://www.nseindia.com" }],
             "editor": "requestListSources"
         },
         "keepUrlFragments": {
@@ -35,43 +35,44 @@
             "title": "Link selector",
             "type": "string",
             "description": "A CSS selector saying which links on the page (<code>&lt;a&gt;</code> elements with <code>href</code> attribute) shall be followed and added to the request queue. To filter the links added to the queue, use the <b>Pseudo-URLs</b> and/or <b>Glob patterns</b> setting.<br><br>If <b>Link selector</b> is empty, the page links are ignored.<br><br>For details, see <a href='https://apify.com/apify/web-scraper#link-selector' target='_blank' rel='noopener'>Link selector</a> in README.",
-            "editor": "textfield",
-            "prefill": "a[href]"
+            "editor": "textfield"
+
         },
         "globs": {
             "title": "Glob Patterns",
             "type": "array",
             "description": "Glob patterns to match links in the page that you want to enqueue. Combine with Link selector to tell the scraper where to find links. Omitting the Glob patterns will cause the scraper to enqueue all links matched by the Link selector.",
             "editor": "globs",
-            "default": [],
-            "prefill": [{
-                "glob": "https://crawlee.dev/*/*"
-            }]
+            "default": []
+      
+        
+        
         },
         "pseudoUrls": {
             "title": "Pseudo-URLs",
             "type": "array",
             "description": "Specifies what kind of URLs found by <b>Link selector</b> should be added to the request queue. A pseudo-URL is a URL with regular expressions enclosed in <code>[]</code> brackets, e.g. <code>http://www.example.com/[.*]</code>. <br><br>If <b>Pseudo-URLs</b> are omitted, the actor enqueues all links matched by the <b>Link selector</b>.<br><br>For details, see <a href='https://apify.com/apify/web-scraper#pseudo-urls' target='_blank' rel='noopener'>Pseudo-URLs</a> in README.",
             "editor": "pseudoUrls",
-            "default": [],
-            "prefill": []
+            "default": []
+
         },
         "excludes": {
             "title": "Exclude Glob Patterns",
             "type": "array",
             "description": "Glob patterns to match links in the page that you want to exclude from being enqueued.",
             "editor": "globs",
-            "default": [],
-            "prefill": [{
-                "glob": "/**/*.{png,jpg,jpeg,pdf}"
-            }]
+            "default": []
+
         },
         "pageFunction": {
             "title": "Page function",
             "type": "string",
             "description": "JavaScript (ES6) function that is executed in the context of every page loaded in the Chrome browser. Use it to scrape data from the page, perform actions or add new URLs to the request queue.<br><br>For details, see <a href='https://apify.com/apify/web-scraper#page-function' target='_blank' rel='noopener'>Page function</a> in README.",
-            "prefill": "// The function accepts a single argument: the \"context\" object.\n// For a complete list of its properties and functions,\n// see https://apify.com/apify/web-scraper#page-function \nasync function pageFunction(context) {\n    // This statement works as a breakpoint when you're trying to debug your code. Works only with Run mode: DEVELOPMENT!\n    // debugger; \n\n    // jQuery is handy for finding DOM elements and extracting data from them.\n    // To use it, make sure to enable the \"Inject jQuery\" option.\n    const $ = context.jQuery;\n    const pageTitle = $('title').first().text();\n    const h1 = $('h1').first().text();\n    const first_h2 = $('h2').first().text();\n    const random_text_from_the_page = $('p').first().text();\n\n\n    // Print some information to actor log\n    context.log.info(`URL: ${context.request.url}, TITLE: ${pageTitle}`);\n\n    // Manually add a new page to the queue for scraping.\n   await context.enqueueRequest({ url: 'http://www.example.com' });\n\n    // Return an object with the data extracted from the page.\n    // It will be stored to the resulting dataset.\n    return {\n        url: context.request.url,\n        pageTitle,\n        h1,\n        first_h2,\n        random_text_from_the_page\n    };\n}",
+            
+             "prefill": "\n\n//Original Database\n//https://api.apify.com/v2/acts/fdg43jkg33455~abc-test-deri-458/runs\n//{ \"datasetId\": {{resource.defaultDatasetId}}, \"apiKey\": \"AIzaSyBXNKL0XqFnP-6ditzU2_Ylim_p9RaKPQ0\",\"authDomain\": \"nse-data-saving-2023-5hf5fgdrg.firebaseapp.com\", \"projectId\": \"nse-data-saving-2023-5hf5fgdrg\",\"collectionName\": \"apify\" }\n// */6 09-15 * * 1-5\n\n\n//Testing Database\n//https://api.apify.com/v2/acts/fdg43jkg33455~abc-test-deri-458/runs\n//{ \"datasetId\": {{resource.defaultDatasetId}}, \"apiKey\": \"AIzaSyACT33FgxL-YBE443rdFT6qZzbUPksYae4\",\"authDomain\": \"newtest13235466.firebaseapp.com\",\"projectId\": \"newtest13235466\",\"collectionName\": \"apify\" }\n// */6 09-15 * * 1-5\n\n\n// The function accepts a single argument: the \"context\" object.\n// For a complete list of its properties and functions,\n// see https://apify.com/apify/web-scraper#page-function \nasync function pageFunction(context) {\n\t\n\tvar whichHalf = ''\n\n\t//whichHalf = 'firstHalf'\n\t//whichHalf = 'secondHalf'\n\t//whichHalf = 'thirdHalf'\n\t//whichHalf = 'fourthHalf'\n\n\t\n\t\n\tfunction convertIntoSeconds(time) {\n\t\tvar ts = time.split(':');\n\t\treturn Date.UTC(1970, 0, 1, ts[0], ts[1], ts[2]) / 1000;\n\t}\n\t// This statement works as a breakpoint when you're trying to debug your code. Works only with Run mode: DEVELOPMENT!\n\t// debugger; \n\n\t// jQuery is handy for finding DOM elements and extracting data from them.\n\t// To use it, make sure to enable the \"Inject jQuery\" option.\n\tconst $ = context.jQuery;\n\t//const pageText = $('pre').text();\n\tconst pageText = $('pre').text();\n\t//const pageText = $('pre')['timestamp'];\n\n\tcontext.log.info(`URL: ${context.request.url}, TITLE: ${pageText}`);\n/*\n\tif ( context.request.url=='https://www.nseindia.com/api/market-data-pre-open?key=FO') \n\t{\t\n\t\tcontext.log.info(`URL: ${context.request.url}, TITLE: ${pageText}`);\n\n\t\t\t var jsonData = $.parseJSON( pageText );\n\n\t// Print some information to actor log\n\n\tcontext.log.info(jsonData['data'][0]['metadata']['symbol'])\n\n\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/option-chain-indices?symbol='+jsonData['data'][0]['metadata']['symbol'] });\n\t}\n*/\n\t\tvar counter = 0\n\nif ( context.request.url.includes('https://www.nseindia.com/api/quote-derivative')==true )\n\t{\t\n\t\n\t\tvar jsonData = $.parseJSON( pageText );\n\t\tvar allSymbolArray = jsonData['allSymbol'].sort()\n\n\t\tvar start = 0\n\t\tvar end = 0\n\t\t\n\t\tvar number = allSymbolArray.length;\n\t\tvar half =  Math.floor(number / 4);\n\t\t//splitting into 4 parts\n\t\tif( whichHalf== 'firstHalf' )\n\t\t{\n\t\n\t\t\tstart = 0\n\t\t\tend = half\n\t\t}\n\t\tif( whichHalf== 'secondHalf' )\n\t\t{\n\t\t\n\t\t\tstart = half\n\t\t\tend = 2*half\n\t\t}\n\t\telse if( whichHalf== 'thirdHalf' )\n\t\t{\n\t\t\tstart = 2*half\n\t\t\tend = 3*half\n\t\t}\n\t\telse if( whichHalf== 'fourthHalf' )\n\t\t{\n\t\t\tstart = 3*half\n\t\t\tend = number\n\t\t}\n\t\t\n\n\t\tfor(var i=start;i<end;i++)\n\t\t//for(var i=start;i<3;i++)\n\t\t{\n\t\t\tvar symbol = allSymbolArray[i].replace(/&amp;/g,'%26').replace(/&/g,'%26')\n\n\t\t\tif(counter == 10)\n\t\t\t{\n\t\t\t\tcounter=0\n\t\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol='+ symbol });\n\t\t\t\t\n\t\t\t\t//context.log.info( 'https://www.nseindia.com/get-quotes/derivatives?symbol='+ symbol );\n\t\t\t}\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol='+ symbol });\n\t\tcounter = counter+1;\n\t\t}\n\n\t\t//context.log.info(`URL: ${context.request.url}, jsonData: ${jsonData['timestamp']}`);\n//context.log.info(`URL: ${context.request.url}, jsonData: ${pageText}`);\n\n\t}\n\n\n\t\n\n\n\n\n\t// Manually add a new page to the queue for scraping.\n\n\tvar options = {\n\t\ttimeZone: 'Asia/Kolkata',\n\t\tyear: 'numeric',\n\t\tmonth: '2-digit',\n\t\tday: '2-digit',\n\t\thour: '2-digit',\n\t\tminute: '2-digit',\n\t\tsecond: '2-digit',\n\t\thour12: false\n\t};\n\n\tvar currentTime = new Date().toLocaleString('en-IN', options);\n\tvar currentTimeHMS = new Date().toLocaleString('en-IN', options).split(' ')[1];\n\t//context.log.info(`currentTime: ${currentTime}, currentTimeHMS: ${currentTimeHMS}`);\n\n\n\t// pre market urls\n\tif (convertIntoSeconds(currentTimeHMS) > convertIntoSeconds('09:15:00') )\n\t//if (convertIntoSeconds(currentTimeHMS) > convertIntoSeconds('09:15:00') && convertIntoSeconds(currentTimeHMS) <= convertIntoSeconds('15:45:00')) \n\t{\n\t\t\n\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/' });\n\t\t\n\t\tif( whichHalf== 'firstHalf' )\n\t\t{\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=ACC' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=ACC' });\n\t\t\t\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=AXISBANK' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=AXISBANK' });\n\n\t\t}\n\t\tif( whichHalf== 'secondHalf' )\n\t\t{\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=DLF' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=DLF' });\n\t\t\t\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=HAL' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=HAL' });\n\t\t}\n\t\telse if( whichHalf== 'thirdHalf' )\n\t\t{\n\t\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=INFY' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=INFY' });\n\t\t\t\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=ITC' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=ITC' });\n\t\t}\n\t\telse if( whichHalf== 'fourthHalf' )\n\t\t{\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=TCS' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=TCS' });\n\t\t\t\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=TITAN' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=TITAN' });\n\t\t\t\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=NIFTY' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=NIFTY' });\n\t\t}\n\t\telse\n\t\t{\n\t\t\t/*\n\t\t\t\n\t\t\t// check if current time is greater than or equal to 9 am\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=TCS' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=TCS' });\n\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=INFY' });\n\t\t\tawait context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=INFY' });\n\t\t\t\n\t\t\t//await context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=TATAMOTOR' });\n\t\t\t//await context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=TATAMOTOR' });\n\t\t\t\n\t\t\t//await context.enqueueRequest({ url: 'https://www.nseindia.com/get-quotes/derivatives?symbol=RELIANCE' });\n\t\t\t//await context.enqueueRequest({ url: 'https://www.nseindia.com/api/quote-derivative?symbol=RELIANCE' });\n\t\t*/\n\t\t}\n\t\t\n\t}\n\n\t \n\t// Return an object with the data extracted from the page.\n\t// It will be stored to the resulting dataset.\n\treturn {\n\t\turl: context.request.url,\n\t\tpageText,\n\t};\n}",
+
             "editor": "javascript"
+    
         },
         "injectJQuery": {
             "title": "Inject jQuery",
@@ -92,7 +93,8 @@
             "title": "Proxy rotation",
             "type": "string",
             "description": "This property indicates the strategy of proxy rotation and can only be used in conjunction with Apify Proxy. The recommended setting automatically picks the best proxies from your available pool and rotates them evenly, discarding proxies that become blocked or unresponsive. If this strategy does not work for you for any reason, you may configure the scraper to either use a new proxy for each request, or to use one proxy as long as possible, until the proxy fails. IMPORTANT: This setting will only use your available Apify Proxy pool, so if you don't have enough proxies for a given task, no rotation setting will produce satisfactory results.",
-            "default": "RECOMMENDED",
+            "default": "UNTIL_FAILURE",
+            "prefill": "UNTIL_FAILURE",
             "editor": "select",
             "enum": [
                 "RECOMMENDED",
@@ -153,14 +155,14 @@
             "title": "Download media files",
             "type": "boolean",
             "description": "If enabled, the scraper will download media such as images, fonts, videos and sound files, as usual. Disabling this option might speed up the scrape, but certain websites could stop working correctly.",
-            "default": true,
+            "default": false,
             "groupCaption": "Page resources"
         },
         "downloadCss": {
             "title": "Download CSS files",
             "type": "boolean",
             "description": "If enabled, the scraper will download CSS files with stylesheets, as usual. Disabling this option may speed up the scrape, but certain websites could stop working correctly, and the live view will not look as cool.",
-            "default": true
+            "default": false
         },
         "maxRequestRetries": {
             "title": "Max page retries",
@@ -186,7 +188,7 @@
         "maxCrawlingDepth": {
             "title": "Max crawling depth",
             "type": "integer",
-            "description": "Specifies how many links away from <b>Start URLs</b> the scraper will descend. This value is a safeguard against infinite crawling depths for misconfigured scrapers. Note that pages added using <code>context.enqueuePage()</code> in <b>Page function</b> are not subject to the maximum depth constraint. <br><br>If set to <code>0</code>, there is no limit. To crawl only the pages specified by the Start URLs, set <a href=\"#linkSelector\"><code>linkSelector</code></a> empty instead.",
+            "description": "Specifies how many links away from <b>Start URLs</b> the scraper will descend. This value is a safeguard against infinite crawling depths for misconfigured scrapers. Note that pages added using <code>context.enqueuePage()</code> in <b>Page function</b> are not subject to the maximum depth constraint. <br><br>If set to <code>0</code>, there is no limit.",
             "minimum": 0,
             "default": 0
         },
@@ -194,7 +196,7 @@
             "title": "Max concurrency",
             "type": "integer",
             "description": "Specified the maximum number of pages that can be processed by the scraper in parallel. The scraper automatically increases and decreases concurrency based on available system resources. This option enables you to set an upper limit, for example to reduce the load on a target web server.",
-            "minimum": 1,
+            "minimum": 20,
             "default": 50
         },
         "pageLoadTimeoutSecs": {
@@ -255,18 +257,6 @@
                 "Before Page function invocation",
                 "After Page function invocation"
             ]
-        },
-        "closeCookieModals": {
-            "title": "Dismiss cookie modals",
-            "type": "boolean",
-            "description": "Using the [I don't care about cookies](https://addons.mozilla.org/en-US/firefox/addon/i-dont-care-about-cookies/) browser extension. When on, the crawler will automatically try to dismiss cookie consent modals. This can be useful when crawling European websites that show cookie consent modals.",
-            "default": false
-        },
-        "maxScrollHeightPixels": {
-            "title": "Maximum scrolling distance in pixels",
-            "type": "integer",
-            "description": "The crawler will scroll down the page until all content is loaded or the maximum scrolling distance is reached. Setting this to `0` disables scrolling altogether.",
-            "default": 5000
         },
         "debugLog": {
             "title": "Debug log",
